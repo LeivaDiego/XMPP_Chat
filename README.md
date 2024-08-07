@@ -10,6 +10,8 @@
 ## Autor
 **Diego Leiva**
 
+## Repo
+https://github.com/LeivaDiego/XMPP_Chat.git
 ---
 
 ### Avances 

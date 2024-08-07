@@ -1,27 +1,47 @@
 import os
-import time
+import ssl
 import logging
 from dotenv import load_dotenv
-import slixmpp
+from slixmpp import ClientXMPP
+from slixmpp.exceptions import IqError, IqTimeout
 
-class EchoClient(slixmpp.ClientXMPP):
+class EchoClient(ClientXMPP):
     def __init__(self, jid, password, recipient, message):
-        slixmpp.ClientXMPP.__init__(self, jid, password)
+        ClientXMPP.__init__(self, jid, password)
         self.recipient = recipient
         self.message = message
 
         # Event handlers
         self.add_event_handler("session_start", self.start)
         self.add_event_handler("message", self.message_handler)
+        self.ssl_version = ssl.PROTOCOL_TLS
 
     async def start(self, event):
-        self.send_presence()
-        await self.get_roster()
 
-        # Send a message to the eco bot
-        self.send_message(mto=self.recipient,
-                          mbody=self.message,
-                          mtype='chat')
+        logging.info("Session started")
+        self.send_presence()
+        try:
+            await self.get_roster()
+            logging.info("Roster retrieved")
+            # Send a message to the eco bot
+            self.send_message(mto=self.recipient,
+                            mbody=self.message,
+                            mtype='chat')
+        except IqError as err:
+            logging.error("There was an error getting the roster")
+            logging.error(err.iq['error']['condition'])
+            self.disconnect()
+        except IqTimeout:
+            logging.error("Server is taking too long to respond")
+            self.disconnect()
+
+        
+
+        
+
+    def message(self, msg):
+        if msg['type'] in ('chat', 'normal'):
+            msg.reply("Thanks for sending\n%(body)s" % msg).send()
 
     def message_handler(self, msg):
         if msg['type'] in ('chat', 'normal'):
