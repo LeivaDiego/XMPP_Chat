@@ -1,10 +1,10 @@
 import logging
 import slixmpp
+from slixmpp.exceptions import IqError, IqTimeout
 from getpass import getpass
 from argparse import ArgumentParser
 import asyncio
 import platform
-
 
 if platform.system() == 'Windows':
     # On Windows, the proactor event loop is necessary to listen for
@@ -16,8 +16,6 @@ else:
     # On Unix, the default event loop is the best choice.
     # On Linux, the default event loop is the best choice.
     print(f"The current platform is {platform.system()}")
-
-
 
 class EchoBot(slixmpp.ClientXMPP):
 
@@ -55,7 +53,13 @@ class EchoBot(slixmpp.ClientXMPP):
                      data.
         """
         self.send_presence()
-        await self.get_roster()
+        try:
+
+            await self.get_roster()
+        except IqError as e:
+            print("Error: %s" % e.iq['error']['condition'])
+        except IqTimeout:
+            print("Error: Request timed out")
 
     def message(self, msg):
         """
@@ -114,11 +118,14 @@ if __name__ == '__main__':
 
         # Connect to the XMPP server and start processing XMPP stanzas.
         xmpp.connect(disable_starttls=True, use_ssl=False)
-        xmpp.process()
+        xmpp.process(forever=False)
+    
     except KeyboardInterrupt as e:
         print("Program interrupted by user")
+    
     except Exception as e:
         print("An error occurred: ", e)
+    
     finally:
         xmpp.disconnect()
         print("Shutting down...")
