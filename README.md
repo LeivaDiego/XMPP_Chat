@@ -89,43 +89,50 @@ To set up the environment for this project, follow these steps:
 
 1. **Clone the Repository:**
 
-   ```bash
+   ```
    git clone https://github.com/LeivaDiego/XMPP_Chat.git
+   ```
 
 2. **Create a Conda Environment:**
 
-You can create a new Conda environment using the provided environment.yml file:
-
+    You can create a new Conda environment using the provided environment.yml file:
+    
+    ```
     conda env create -f environment.yml
+    ```
 
-This command will create a new Conda environment with all the necessary dependencies.
+    This command will create a new Conda environment with all the necessary dependencies.
+    <br>
 
-1. **Activate the Conda Environment:**
 
-    ```bash
+3. **Activate the Conda Environment:**
+    ```
     conda activate your-environment-name
+    ```
 
 4. **Running the Application**
-After setting up the environment, you can run the application:
+    After setting up the environment, you can run the application:
 
-    ```bash
+    ```
     python main.py
+    ```
 
-This will start the XMPP client, and you will be prompted with the initial menu to log in, register, or exit.
+    This will start the XMPP client, and you will be prompted with the initial menu to log in, register, or exit.
+    <br>
 
 5. **Dependencies**
-The project uses the following dependencies, which are specified in the environment.yml file:
+    The project uses the following dependencies, which are specified in the environment.yml file:
 
-```yaml
-    name: xmpp-client-env
-    channels:
-    - defaults
-    dependencies:
-    - python=3.8
-    - slixmpp
-    - pyqt=5
-```
+    ```yaml
+        name: xmpp-client-env
+        channels:
+        - defaults
+        dependencies:
+        - python=3.8
+        - slixmpp
+        - pyqt=5
+    ```
 
-8. **Key Libraries**
-- slixmpp: The core library used to implement the XMPP protocol.
-- Asyncio: For managing asynchronous tasks within the application.
+6. **Key Libraries**
+- `slixmpp`: The core library used to implement the XMPP protocol.
+- `Asyncio`: For managing asynchronous tasks within the application.
