@@ -6,8 +6,6 @@ class HomeWindow:
     The HomeWindow class is used to create a home window for the application.
     The home window is displayed after the user has successfully logged in.
     """
-    # TODO: Implement logic for the HomeWindow class
-    # Currently, the HomeWindow class is the template that will be used on final implementation.
     def __init__(self, xmpp_client):
         self.root = tk.Tk()
         self.root.title("XMPP Chat Home")
@@ -22,6 +20,8 @@ class HomeWindow:
         # Display the current user's JID and presence
         self.update_user_info()
 
+        # Fetch and display contacts
+        self.update_contacts_list()
 
     def configure_layout(self):
         # Create the left-side menu
@@ -53,6 +53,7 @@ class HomeWindow:
         self.contact_selector = ttk.Combobox(contact_frame, values=[], state="readonly")
         self.contact_selector.pack(side=tk.LEFT, padx=5)
         self.contact_selector.set("Select a contact")
+        self.contact_selector.bind("<<ComboboxSelected>>", self.display_contact_info)
 
         # Create a text box to display contact information
         self.contact_info = tk.Text(contact_frame, height=4, state=tk.DISABLED, wrap=tk.WORD)
@@ -81,19 +82,73 @@ class HomeWindow:
 
         # Create a send button
         tk.Button(message_input_frame, text="Send").pack(side=tk.RIGHT, padx=5)
-
     
+
     def update_user_info(self):
         """
         Update the user information displayed in the HomeWindow.
         """
         try:
-            user_jid = str(self.client.boundjid.full).split('/')[0]
+            user_jid = self.client.boundjid.bare
             status = "Online"  # Default value, update as needed based on actual presence
             self.user_info_label.config(text=f"User: {user_jid}\nStatus: {status}")
             print(f"SUCCESS: User information retrieved: {user_jid}, {status}")
         except Exception as e:
             print(f"ERROR: Failed to update user information: {e}")
+
+
+    def update_contacts_list(self):
+        """
+        Fetch the contacts from the XMPP server and update the dropdown menu.
+        Exclude the user's own JID from the contact list.
+        """
+        try:
+            roster = self.client.client_roster
+            own_jid = str(self.client.boundjid.bare)  # Get the user's own JID without the resource part
+            contacts = [jid for jid in roster.keys() if jid != own_jid]
+            self.contact_selector['values'] = contacts
+            print(f"SUCCESS: Contacts retrieved and populated, excluding own JID: {own_jid}")
+        except Exception as e:
+            print(f"ERROR: Failed to retrieve contacts: {e}")
+
+
+
+    def display_contact_info(self, event):
+        """
+        Display the selected contact's information in the contact info text box.
+        """
+        # Get the selected contact from the dropdown menu
+        selected_contact = self.contact_selector.get()
+
+        # Display the contact information in the text box
+        if selected_contact:
+            # Get the presence information for the selected contact
+            roster = self.client.client_roster
+
+            if selected_contact in roster:
+                # Default values
+                presence_value = "Offline"
+                status = "None"
+
+                # Check and iterate through presence information
+                for _, presence in roster.presence(selected_contact).items():
+                    presence_value = presence['show'] or 'Offline'
+                    status = presence['status'] or 'None'
+                    # Only check the first presence value
+                    break  
+
+                contact_info_text = f"JID: {selected_contact}\nPresence: {presence_value}\nStatus: {status}"
+                self.contact_info.config(state=tk.NORMAL)
+                self.contact_info.delete(1.0, tk.END)
+                self.contact_info.insert(tk.END, contact_info_text)
+                self.contact_info.config(state=tk.DISABLED)
+            else:
+                self.contact_info.config(state=tk.NORMAL)
+                self.contact_info.delete(1.0, tk.END)
+                self.contact_info.insert(tk.END, "No information available")
+                self.contact_info.config(state=tk.DISABLED)
+
+
     
     def logout(self):
         """
