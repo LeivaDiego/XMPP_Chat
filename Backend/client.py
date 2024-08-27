@@ -10,20 +10,33 @@ class XMPP_Client(ClientXMPP):
     A simple Slixmpp bot that will echo messages it
     receives, along with a short thank you message.
     """
+    _instance = None
+
+    def __new__(cls, *args, **kwargs):
+        """
+        Singleton pattern to ensure only one instance of the XMPP_Client is created.
+        """
+        if cls._instance is None:
+            cls._instance = super(XMPP_Client, cls).__new__(cls)
+        return cls._instance
+    
     def __init__(self, jid, password, window=None, register=False):
-        super().__init__(jid, password)
-        self.window = window
-        self.registration = register
+        if not hasattr(self, 'initialized'):
+            super().__init__(jid, password)
+            self.window = window
+            self.registration = register
+            self.initialized = True
 
-        # Register event handlers
-        if self.registration:
-            self.add_event_handler("register", self.register)
+            # Register event handlers
+            if self.registration:
+                self.add_event_handler("register", self.register)
 
-        # Set event Handlers
-        self.add_event_handler("session_start", self.start)
-        self.add_event_handler("message", self.message)
-        self.add_event_handler("failed_auth", self.failed_auth)
-        print("SUCCES: ClientXMPP initialized")
+            # Set event Handlers
+            self.add_event_handler("session_start", self.start)
+            self.add_event_handler("message", self.message)
+            self.add_event_handler("failed_auth", self.failed_auth)
+            print("SUCCES: ClientXMPP initialized")
+
 
     async def start(self, event):
         """
@@ -122,3 +135,10 @@ class XMPP_Client(ClientXMPP):
         home_window = HomeWindow(self)
         home_window.root.mainloop()
         await asyncio.sleep(0.01)
+
+    def logout(self):
+        self.disconnect()
+        print("INFO: Client disconnected from the server")
+        XMPP_Client._instance = None
+        self.initialized = False
+        print("INFO: XMPP Client instance cleaned and reset")

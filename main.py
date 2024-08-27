@@ -10,6 +10,14 @@ def main():
         if hasattr(asyncio, 'WindowsSelectorEventLoopPolicy'):
             asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
+    loop = asyncio.get_event_loop()
+
+    if loop.is_running():
+        print("INFO: The asyncio event loop is already running")
+    else:
+        print("INFO: Starting the asyncio event loop")
+        loop.run_until_complete(asyncio.sleep(0))
+
     # Create the welcome window and start the main loop
     welcome_window = WelcomeWindow()
     welcome_window.root.mainloop()
