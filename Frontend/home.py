@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, messagebox
 
 class HomeWindow:
     """
@@ -29,7 +29,7 @@ class HomeWindow:
         menu_frame.pack(side=tk.LEFT, fill=tk.Y, padx=10, pady=10)
 
         # Create buttons for the left-side menu
-        tk.Button(menu_frame, text="Show Contacts").pack(fill=tk.X, pady=5)
+        tk.Button(menu_frame, text="Show Contacts", command=self.show_contacts).pack(fill=tk.X, pady=5)
         tk.Button(menu_frame, text="Add New Contact").pack(fill=tk.X, pady=5)
         tk.Button(menu_frame, text="Join Group").pack(fill=tk.X, pady=5)
         tk.Button(menu_frame, text="Create New Group").pack(fill=tk.X, pady=5)
@@ -53,7 +53,8 @@ class HomeWindow:
         self.contact_selector = ttk.Combobox(contact_frame, values=[], state="readonly")
         self.contact_selector.pack(side=tk.LEFT, padx=5)
         self.contact_selector.set("Select a contact")
-        self.contact_selector.bind("<<ComboboxSelected>>", self.display_contact_info)
+        self.contact_selector.bind("<<ComboboxSelected>>", self.on_contact_select)
+
 
         # Create a text box to display contact information
         self.contact_info = tk.Text(contact_frame, height=4, state=tk.DISABLED, wrap=tk.WORD)
@@ -89,28 +90,33 @@ class HomeWindow:
         Update the user information displayed in the HomeWindow.
         """
         try:
-            user_jid = self.client.boundjid.bare
+            user_jid = str(self.client.boundjid.full).split('/')[0]
             status = "Online"  # Default value, update as needed based on actual presence
             self.user_info_label.config(text=f"User: {user_jid}\nStatus: {status}")
             print(f"SUCCESS: User information retrieved: {user_jid}, {status}")
         except Exception as e:
             print(f"ERROR: Failed to update user information: {e}")
 
+    def on_contact_select(self, event):
+        """
+        Handle the contact selection event.
+        """
+        # First, update the contacts list
+        self.update_contacts_list()
+        # Then, display the selected contact's information
+        self.display_contact_info(event)
 
     def update_contacts_list(self):
         """
         Fetch the contacts from the XMPP server and update the dropdown menu.
-        Exclude the user's own JID from the contact list.
         """
         try:
             roster = self.client.client_roster
-            own_jid = str(self.client.boundjid.bare)  # Get the user's own JID without the resource part
-            contacts = [jid for jid in roster.keys() if jid != own_jid]
+            contacts = [jid for jid in roster.keys() if jid != str(self.client.boundjid.full).split('/')[0]]
             self.contact_selector['values'] = contacts
-            print(f"SUCCESS: Contacts retrieved and populated, excluding own JID: {own_jid}")
+            print(f"SUCCESS: Contacts retrieved: {contacts}")
         except Exception as e:
             print(f"ERROR: Failed to retrieve contacts: {e}")
-
 
 
     def display_contact_info(self, event):
@@ -148,6 +154,28 @@ class HomeWindow:
                 self.contact_info.insert(tk.END, "No information available")
                 self.contact_info.config(state=tk.DISABLED)
 
+
+    def show_contacts(self):
+        """
+        Display all contacts and their details in a messagebox.
+        """
+        roster = self.client.client_roster
+        contacts_info = ""
+
+        for jid in roster.keys():
+            if jid != str(self.client.boundjid.full).split('/')[0]:
+                presence_value = "Offline"
+                status = "None"
+                for _, presence in roster.presence(jid).items():
+                    presence_value = presence['show'] or "Offline"
+                    status = presence['status'] or "None"
+                    break
+                contacts_info += f"JID: {jid}\nPresence: {presence_value}\nStatus: {status}\n\n"
+
+        if contacts_info:
+            messagebox.showinfo("Contacts List", contacts_info)
+        else:
+            messagebox.showinfo("Contacts List", "No contacts found")
 
     
     def logout(self):
