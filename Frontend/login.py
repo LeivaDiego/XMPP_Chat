@@ -16,6 +16,7 @@ class LoginForm:
         - username_entry: The entry field for the username
         - password_entry: The entry field for the password
         - show_password: A boolean flag to toggle password visibility
+        - loading_label: A label to display loading messages
 
     Methods:
         - initialize_items: Initializes the items on the login form (labels, entry fields, buttons)
@@ -23,6 +24,7 @@ class LoginForm:
         - submit_form: Validates the input fields and logs the user in
         - return_to_welcome: Closes the login form and returns to the welcome window
         - center_window: Centers the window on the screen
+        - show_authentication_failed: Updates the loading label to show an authentication failure message
     """
 
     def __init__(self):
@@ -33,8 +35,9 @@ class LoginForm:
         self.username_entry = None
         self.password_entry = None
         self.show_password = False
+        self.loading_label = None
         self.initialize_items()
-        self.center_window(400, 150)
+        self.center_window(400, 200)
 
     def initialize_items(self):
         """
@@ -78,6 +81,11 @@ class LoginForm:
         submit_button = tk.Button(button_frame, text="Login", command=self.submit_form)
         submit_button.grid(row=0, column=1, padx=10)
 
+        # Add a loading label but keep it hidden initially
+        self.loading_label = tk.Label(self.root, text="Authenticating...", font=("Arial", 10))
+        self.loading_label.pack(pady=10)
+        self.loading_label.pack_forget()
+
 
     def toggle_password(self):
         """
@@ -101,9 +109,6 @@ class LoginForm:
         If the credentials are correct, display a success message.
         If the credentials are incorrect, display an error message.
         """
-        # TODO: Show error messages for incorrect credentials
-        # Currently login form freezes after clicking login button if credentials are incorrect
-
         # Get the username and password from the entry fields
         username = self.username_entry.get()
         password = self.password_entry.get()
@@ -113,12 +118,20 @@ class LoginForm:
             messagebox.showwarning("Input Error", "Please fill in both fields")
             return
         
+        # Check if the username ends with '@alumchat.lol' domain
         if not username.endswith("@alumchat.lol"):
             messagebox.showerror("Invalid Username", "Username must end with '@alumchat.lol'")
             return
 
-        #self.root.destroy()
-        xmpp = EchoBot(username, password, self.root)
+        # Create an instance of the EchoBot class and connect to the server
+        xmpp = EchoBot(username, password, self)
+
+        # Show the loading label
+        self.loading_label.config(text="Authenticating...", fg="black")  # Reset label text and color
+        self.loading_label.pack()
+        self.loading_label.update_idletasks()
+
+        # Connect to the server
         xmpp.connect(disable_starttls=True, use_ssl=False)
         xmpp.process(forever=False, timeout=10)
         
@@ -146,4 +159,11 @@ class LoginForm:
         x = (screen_width // 2) - (width // 2)
         y = (screen_height // 2) - (height // 2)
         self.root.geometry(f'{width}x{height}+{x}+{y}')
+
+    def show_authentication_failed(self):
+        """
+        Update the loading label to show an authentication failure message.
+        """
+        self.loading_label.config(text="Authentication Failed. Try again...", fg="red")
+        self.loading_label.update_idletasks()
 

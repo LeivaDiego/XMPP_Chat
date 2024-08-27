@@ -2,7 +2,6 @@ from slixmpp import ClientXMPP
 from tkinter import messagebox
 from Frontend.home import HomeWindow
 import asyncio
-from asyncio.exceptions import CancelledError
 
 class EchoBot(ClientXMPP):
 
@@ -10,7 +9,6 @@ class EchoBot(ClientXMPP):
     A simple Slixmpp bot that will echo messages it
     receives, along with a short thank you message.
     """
-
     def __init__(self, jid, password, login_window):
         ClientXMPP.__init__(self, jid, password)
         self.login_window = login_window
@@ -37,7 +35,7 @@ class EchoBot(ClientXMPP):
         await self.get_roster()
         print("SUCCESS: user connected to the server")
         messagebox.showinfo("Success", "Successfully authenticated with the server")
-        self.login_window.destroy()
+        self.login_window.root.destroy()
         await self.init_home_gui()
 
     def message(self, msg):
@@ -55,18 +53,29 @@ class EchoBot(ClientXMPP):
         if msg['type'] in ('chat', 'normal'):
             msg.reply("Thanks for sending\n%(body)s" % msg).send()
 
-
     def failed_auth(self, event):
         """
         Handler for failed authentication attempts.
-        If the authentication attempt fails, an error message is displayed.
-        And the client is disconnected from the server.
+        If the authentication attempt fails, an error message is displayed,
+        and the client is disconnected from the server.
         """
-        messagebox.showerror("Error", "Failed to authenticate with the server credentials")
-        print("ERROR: Authentication Failed")
-        print("INFO: Client disconnected from the server")
-        self.disconnect()
-        
+        def handle_failed_auth():
+            """
+            Internal function to handle failed authentication.
+            """
+            # Display an error message and update the login window
+            messagebox.showerror("Error", "Failed to authenticate with the server credentials")
+            self.login_window.show_authentication_failed()
+           
+            # Add a print statement to show the error message in the console
+            print("ERROR: Authentication Failed")
+            print("INFO: Client disconnected from the server")
+            
+            # Disconnect the client from the server
+            self.disconnect()
+
+        # Use after to schedule the error message and disconnection
+        self.login_window.root.after(0, handle_failed_auth)
 
     async def init_home_gui(self):
         """
