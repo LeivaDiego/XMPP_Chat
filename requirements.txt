@@ -1,0 +1,9 @@
+aiodns==3.2.0
+cffi==1.17.0
+pyasn1==0.6.0
+pyasn1_modules==0.4.0
+pycares==4.4.0
+pycparser==2.22
+setuptools==72.1.0
+slixmpp==1.8.5
+wheel==0.43.0
