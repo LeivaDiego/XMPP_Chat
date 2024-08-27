@@ -114,7 +114,6 @@ class LoginForm:
         # Dummy check for successful login
         if username == "test" and password == "password":
             messagebox.showinfo("Success", "Logged in successfully!")
-            self.root.quit()
         else:
             messagebox.showerror("Login Failed", "Invalid credentials or failed to connect")
 
@@ -123,10 +122,10 @@ class LoginForm:
         """
         Close the login form and return to the welcome window
         """
-        self.root.destroy()  # Close the login form
-        from Frontend.welcome import WelcomeWindow
-        welcome_window = WelcomeWindow()  # Recreate the welcome window
-        welcome_window.root.mainloop()
+        self.root.destroy()                             # Close the login form
+        from Frontend.welcome import WelcomeWindow      # Import the WelcomeWindow class
+        welcome_window = WelcomeWindow()                # Recreate the welcome window
+        welcome_window.root.mainloop()                  # Open the welcome window
 
 
     def center_window(self, width, height):
@@ -135,10 +134,9 @@ class LoginForm:
         Calculates the x and y coordinates to position the window in the center of the
         screen based on the screen width and height.
         """
-        # Get the screen width and height
-        screen_width = self.root.winfo_screenwidth()
-        # Get the screen height
-        screen_height = self.root.winfo_screenheight()
+        screen_width = self.root.winfo_screenwidth()        # Get the screen width
+        screen_height = self.root.winfo_screenheight()      # Get the screen height
+
         # Calculate the x and y coordinates to center the window
         x = (screen_width // 2) - (width // 2)
         y = (screen_height // 2) - (height // 2)

@@ -57,8 +57,10 @@ class WelcomeWindow:
         quit_button.grid(row=2, column=0, columnspan=2, pady=10)
 
     def open_register_form(self):
-        # TODO: Implement the open_register_form method
-        pass
+        self.root.destroy()                         # Close the welcome window
+        from Frontend.register import RegisterForm  # Import the RegisterForm class
+        register_form = RegisterForm()              # Create an instance of the RegisterForm class
+        register_form.root.mainloop()               # Open the registration form
 
     def open_login_form(self):
         """
@@ -75,10 +77,9 @@ class WelcomeWindow:
         Calculates the x and y coordinates to position the window in the center of the
         screen based on the screen width and height.
         """
-        # Get the screen width and height
-        screen_width = self.root.winfo_screenwidth()
-        # Get the screen height
-        screen_height = self.root.winfo_screenheight()
+        screen_width = self.root.winfo_screenwidth()    # Get the screen width and height
+        screen_height = self.root.winfo_screenheight()  # Get the screen height
+        
         # Calculate the x and y coordinates to center the window
         x = (screen_width // 2) - (width // 2)
         y = (screen_height // 2) - (height // 2)
