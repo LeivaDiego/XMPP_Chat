@@ -14,9 +14,14 @@ class HomeWindow:
         self.client = xmpp_client
         self.root.resizable(False, False)
         self.configure_layout()
+        self.center_window(900, 600)
 
         # Handle the window close event
         self.root.protocol("WM_DELETE_WINDOW", self.on_close)
+
+        # Display the current user's JID and presence
+        self.update_user_info()
+
 
     def configure_layout(self):
         # Create the left-side menu
@@ -29,7 +34,7 @@ class HomeWindow:
         tk.Button(menu_frame, text="Join Group").pack(fill=tk.X, pady=5)
         tk.Button(menu_frame, text="Create New Group").pack(fill=tk.X, pady=5)
         tk.Button(menu_frame, text="Update Presence").pack(fill=tk.X, pady=5)
-        tk.Button(menu_frame, text="Logout").pack(fill=tk.X, pady=5)
+        tk.Button(menu_frame, text="Logout", command=self.logout).pack(fill=tk.X, pady=5)
         tk.Button(menu_frame, text="Delete My Account").pack(fill=tk.X, pady=5)
 
         # Create a label or text box for displaying the current user's information at the bottom left
@@ -77,6 +82,19 @@ class HomeWindow:
         # Create a send button
         tk.Button(message_input_frame, text="Send").pack(side=tk.RIGHT, padx=5)
 
+    
+    def update_user_info(self):
+        """
+        Update the user information displayed in the HomeWindow.
+        """
+        try:
+            user_jid = str(self.client.boundjid.full).split('/')[0]
+            status = "Online"  # Default value, update as needed based on actual presence
+            self.user_info_label.config(text=f"User: {user_jid}\nStatus: {status}")
+            print(f"SUCCESS: User information retrieved: {user_jid}, {status}")
+        except Exception as e:
+            print(f"ERROR: Failed to update user information: {e}")
+    
     def logout(self):
         """
         Logout the user and disconnect the client from the server.
@@ -85,12 +103,18 @@ class HomeWindow:
         print("INFO: Client disconnected from the server")
         self.root.destroy()
         print("INFO: Please wait while tasks are being cleaned up")
+        from Frontend.welcome import WelcomeWindow
+        welcome_window = WelcomeWindow()
+        welcome_window.root.mainloop()
 
     def on_close(self):
         """
         Handle the window close event.
         """
-        self.logout()
+        self.client.disconnect()
+        print("INFO: Client disconnected from the server")
+        self.root.destroy()
+        print("INFO: Please wait while tasks are being cleaned up")
 
     def center_window(self, width, height):
         """
@@ -105,8 +129,3 @@ class HomeWindow:
         x = (screen_width // 2) - (width // 2)
         y = (screen_height // 2) - (height // 2)
         self.root.geometry(f'{width}x{height}+{x}+{y}')
-
-
-
-home = HomeWindow(None)
-home.root.mainloop()
