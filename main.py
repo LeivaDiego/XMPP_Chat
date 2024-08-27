@@ -6,7 +6,7 @@ def main():
     if platform.system() == 'Windows':
         # On Windows, the proactor event loop is necessary to listen for
         # events on stdin while running the asyncio event loop.
-        print("The current platform is Windows")
+        print("INFO: The current platform is Windows")
         if hasattr(asyncio, 'WindowsSelectorEventLoopPolicy'):
             asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 

@@ -28,12 +28,13 @@ class LoginForm:
     def __init__(self):
         # Create the main window of the login form
         self.root = tk.Tk()
+        self.root.resizable(False, False)
         self.root.title("Login Form")
         self.username_entry = None
         self.password_entry = None
         self.show_password = False
         self.initialize_items()
-        self.center_window(400, 200)
+        self.center_window(400, 150)
 
     def initialize_items(self):
         """
@@ -52,13 +53,13 @@ class LoginForm:
         # Create a label for the username field
         username_label = tk.Label(form_frame, text="Username:")
         username_label.grid(row=0, column=0, padx=10, pady=5, sticky="e")
-        self.username_entry = tk.Entry(form_frame)
+        self.username_entry = tk.Entry(form_frame, width=30)
         self.username_entry.grid(row=0, column=1, padx=10, pady=5)
 
         # Create a label for the password field
         password_label = tk.Label(form_frame, text="Password:")
         password_label.grid(row=1, column=0, padx=10, pady=5, sticky="e")
-        self.password_entry = tk.Entry(form_frame, show="*")
+        self.password_entry = tk.Entry(form_frame, show="*", width=30)
         self.password_entry.grid(row=1, column=1, padx=10, pady=5)
 
         # Create a button to toggle password visibility
@@ -100,8 +101,8 @@ class LoginForm:
         If the credentials are correct, display a success message.
         If the credentials are incorrect, display an error message.
         """
-        # TODO: Implement the submit_form method to validate the input fields and log the user in
         # TODO: Show error messages for incorrect credentials
+        # Currently login form freezes after clicking login button if credentials are incorrect
 
         # Get the username and password from the entry fields
         username = self.username_entry.get()
@@ -111,10 +112,16 @@ class LoginForm:
         if not username or not password:
             messagebox.showwarning("Input Error", "Please fill in both fields")
             return
+        
+        if not username.endswith("@alumchat.lol"):
+            messagebox.showerror("Invalid Username", "Username must end with '@alumchat.lol'")
+            return
 
-        xmpp = EchoBot(username, password)
+        #self.root.destroy()
+        xmpp = EchoBot(username, password, self.root)
         xmpp.connect(disable_starttls=True, use_ssl=False)
-        xmpp.process(forever=False)
+        xmpp.process(forever=False, timeout=10)
+        
 
     def return_to_welcome(self):
         """

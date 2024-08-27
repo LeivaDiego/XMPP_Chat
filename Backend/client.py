@@ -2,7 +2,7 @@ from slixmpp import ClientXMPP
 from tkinter import messagebox
 from Frontend.home import HomeWindow
 import asyncio
-import time
+from asyncio.exceptions import CancelledError
 
 class EchoBot(ClientXMPP):
 
@@ -11,9 +11,9 @@ class EchoBot(ClientXMPP):
     receives, along with a short thank you message.
     """
 
-    def __init__(self, jid, password):
+    def __init__(self, jid, password, login_window):
         ClientXMPP.__init__(self, jid, password)
-
+        self.login_window = login_window
         # Set event Handlers
         self.add_event_handler("session_start", self.start)
         self.add_event_handler("message", self.message)
@@ -37,7 +37,8 @@ class EchoBot(ClientXMPP):
         await self.get_roster()
         print("SUCCESS: user connected to the server")
         messagebox.showinfo("Success", "Successfully authenticated with the server")
-        await asyncio.create_task(self.init_home_gui())
+        self.login_window.destroy()
+        await self.init_home_gui()
 
     def message(self, msg):
         """
@@ -62,14 +63,15 @@ class EchoBot(ClientXMPP):
         And the client is disconnected from the server.
         """
         messagebox.showerror("Error", "Failed to authenticate with the server credentials")
-        print("Failed to authenticate")
+        print("ERROR: Authentication Failed")
+        print("INFO: Client disconnected from the server")
         self.disconnect()
-
+        
 
     async def init_home_gui(self):
         """
         Initialize the home GUI for the user.
         """
-        home_window = HomeWindow()
+        home_window = HomeWindow(self)
         home_window.root.mainloop()
-        await time.sleep(0.01)
+        await asyncio.sleep(0.01)
