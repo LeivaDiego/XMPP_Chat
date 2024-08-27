@@ -207,14 +207,17 @@ class HomeWindow:
 
     def delete_account(self):
         """
-        Delete the user's account and log out.
+        Delete the user's account and log out if successful.
         """
         try:
-            self.client.delete_my_account()
-            messagebox.showinfo("Account Deleted", "Your account has been successfully deleted.")
-            self.logout()
+            if self.client.delete_my_account():
+                messagebox.showinfo("Account Deleted", "Your account has been successfully deleted.")
+                self.logout()
+            else:
+                messagebox.showerror("Error", "Failed to delete your account. Please try again.")
         except Exception as e:
-            messagebox.showerror("Error", f"Failed to delete the account: {e}")
+            messagebox.showerror("Error", f"An unexpected error occurred: {e}")
+
     
     
     def logout(self):

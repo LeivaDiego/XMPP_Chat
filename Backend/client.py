@@ -2,6 +2,7 @@ from slixmpp import ClientXMPP
 from tkinter import messagebox
 from Frontend.home import HomeWindow
 import asyncio
+import xml.etree.ElementTree as ET
 from slixmpp.exceptions import IqError, IqTimeout
 
 class XMPP_Client(ClientXMPP):
@@ -172,19 +173,31 @@ class XMPP_Client(ClientXMPP):
 
     def delete_my_account(self):
         """
-        Delete the user's account from the server.
+        Delete the user's account from the server by sending an IQ stanza with a 'remove' request.
         """
         try:
-            iq = self.Iq()
-            iq['type'] = 'set'
-            iq.enable('register')
-            iq['register']['remove'] = True
-            iq.send(now=True)
+            # Create a new IQ stanza
+            iq = self.make_iq_set()
+
+            # Manually construct the 'query' element with the 'remove' request
+            query = ET.Element('{jabber:iq:register}query')
+            remove = ET.SubElement(query, 'remove')
+
+            # Attach the query element to the IQ stanza
+            iq.append(query)
+
+            # Send the IQ stanza and wait for the response
+            result = iq.send()
+
             print("SUCCESS: Account successfully deleted from the server")
+            return True
+
         except IqError as e:
             print(f"ERROR: Failed to delete account: {e.iq['error']['text']}")
-            raise
+            messagebox.showerror("Error", f"Failed to delete the account: {e.iq['error']['text']}")
+            return False
         except IqTimeout:
             print("ERROR: Timeout while trying to delete account")
-            raise
+            messagebox.showerror("Error", "Timeout while trying to delete account")
+            return False
 
