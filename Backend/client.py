@@ -27,6 +27,9 @@ class XMPP_Client(ClientXMPP):
             self.registration = register
             self.initialized = True
 
+            # Store the presence and status
+            self.presence = {'show': 'Available', 'status': ''}
+
             # Register event handlers
             if self.registration:
                 self.add_event_handler("register", self.register)
@@ -126,6 +129,29 @@ class XMPP_Client(ClientXMPP):
             print("TIMEOUT: No response from server.")
             self.window.show_registration_failed()
             self.disconnect()
+
+    def update_presence(self, presence, custom_message=None):
+            """
+            Update the presence status on the server and store it locally.
+            """
+            presence_mapping = {
+                "Available": None,
+                "Away": "away",
+                "Do Not Disturb": "dnd",
+                "Extended Away": "xa"
+            }
+
+            # Determine the show value for the presence
+            show_value = presence_mapping.get(presence, None)
+
+            # Update internal state
+            self.presence['show'] = presence
+            self.presence['status'] = custom_message if custom_message else ''
+
+            # Send the presence update to the server
+            self.send_presence(pshow=show_value, pstatus=self.presence['status'])
+            print(f"SUCCESS: Presence updated to {presence} with status: {self.presence['status']}")
+
 
 
     async def init_home_gui(self):

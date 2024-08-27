@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
+from Frontend.status import UpdatePresenceWindow
 
 class HomeWindow:
     """
@@ -33,7 +34,7 @@ class HomeWindow:
         tk.Button(menu_frame, text="Add New Contact").pack(fill=tk.X, pady=5)
         tk.Button(menu_frame, text="Join Group").pack(fill=tk.X, pady=5)
         tk.Button(menu_frame, text="Create New Group").pack(fill=tk.X, pady=5)
-        tk.Button(menu_frame, text="Update Presence").pack(fill=tk.X, pady=5)
+        tk.Button(menu_frame, text="Update Presence", command=self.open_update_presence_window).pack(fill=tk.X, pady=5)
         tk.Button(menu_frame, text="Logout", command=self.logout).pack(fill=tk.X, pady=5)
         tk.Button(menu_frame, text="Delete My Account").pack(fill=tk.X, pady=5)
 
@@ -90,12 +91,19 @@ class HomeWindow:
         Update the user information displayed in the HomeWindow.
         """
         try:
-            user_jid = str(self.client.boundjid.full).split('/')[0]
-            status = "Online"  # Default value, update as needed based on actual presence
-            self.user_info_label.config(text=f"User: {user_jid}\nStatus: {status}")
-            print(f"SUCCESS: User information retrieved: {user_jid}, {status}")
+            user_jid = self.client.boundjid.bare
+            
+            # Retrieve the presence from the internal state if maintained
+            status_message = self.client.presence.get('status', 'None')
+            presence_type = self.client.presence.get('show', 'Available')
+            
+            # Update the UI with the user's own information
+            self.user_info_label.config(text=f"User: {user_jid}\nPresence: {presence_type}\nStatus: {status_message}")
+            print(f"SUCCESS: User information retrieved: {user_jid}, Presence: {presence_type}, Status: {status_message}")
         except Exception as e:
             print(f"ERROR: Failed to update user information: {e}")
+
+
 
     def on_contact_select(self, event):
         """
@@ -176,6 +184,14 @@ class HomeWindow:
             messagebox.showinfo("Contacts List", contacts_info)
         else:
             messagebox.showinfo("Contacts List", "No contacts found")
+
+    def open_update_presence_window(self):
+        """
+        Open the UpdatePresenceWindow to update the user's
+        presence status and custom message.
+        """
+        update_presence_window = UpdatePresenceWindow(self.client, self)
+        update_presence_window.root.mainloop()
 
     
     def logout(self):
