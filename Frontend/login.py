@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import messagebox
+from Backend.client import EchoBot
 
 class LoginForm:
     """
@@ -100,7 +101,7 @@ class LoginForm:
         If the credentials are incorrect, display an error message.
         """
         # TODO: Implement the submit_form method to validate the input fields and log the user in
-        # Currently, the method displays a success message if the username is "test" and the password is "password"
+        # TODO: Show error messages for incorrect credentials
 
         # Get the username and password from the entry fields
         username = self.username_entry.get()
@@ -111,12 +112,9 @@ class LoginForm:
             messagebox.showwarning("Input Error", "Please fill in both fields")
             return
 
-        # Dummy check for successful login
-        if username == "test" and password == "password":
-            messagebox.showinfo("Success", "Logged in successfully!")
-        else:
-            messagebox.showerror("Login Failed", "Invalid credentials or failed to connect")
-
+        xmpp = EchoBot(username, password)
+        xmpp.connect(disable_starttls=True, use_ssl=False)
+        xmpp.process(forever=False)
 
     def return_to_welcome(self):
         """
