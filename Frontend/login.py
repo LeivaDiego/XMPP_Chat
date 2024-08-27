@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import messagebox
-from Backend.client import EchoBot
+from Backend.client import XMPP_Client
 
 class LoginForm:
     """
@@ -124,7 +124,7 @@ class LoginForm:
             return
 
         # Create an instance of the EchoBot class and connect to the server
-        xmpp = EchoBot(username, password, self)
+        xmpp = XMPP_Client(username, password, self)
 
         # Show the loading label
         self.loading_label.config(text="Authenticating...", fg="black")  # Reset label text and color

@@ -2,16 +2,23 @@ from slixmpp import ClientXMPP
 from tkinter import messagebox
 from Frontend.home import HomeWindow
 import asyncio
+from slixmpp.exceptions import IqError, IqTimeout
 
-class EchoBot(ClientXMPP):
+class XMPP_Client(ClientXMPP):
 
     """
     A simple Slixmpp bot that will echo messages it
     receives, along with a short thank you message.
     """
-    def __init__(self, jid, password, login_window):
-        ClientXMPP.__init__(self, jid, password)
-        self.login_window = login_window
+    def __init__(self, jid, password, window=None, register=False):
+        super().__init__(jid, password)
+        self.window = window
+        self.registration = register
+
+        # Register event handlers
+        if self.registration:
+            self.add_event_handler("register", self.register)
+
         # Set event Handlers
         self.add_event_handler("session_start", self.start)
         self.add_event_handler("message", self.message)
@@ -35,7 +42,7 @@ class EchoBot(ClientXMPP):
         await self.get_roster()
         print("SUCCESS: user connected to the server")
         messagebox.showinfo("Success", "Successfully authenticated with the server")
-        self.login_window.root.destroy()
+        self.window.root.destroy()
         await self.init_home_gui()
 
     def message(self, msg):
@@ -65,7 +72,7 @@ class EchoBot(ClientXMPP):
             """
             # Display an error message and update the login window
             messagebox.showerror("Error", "Failed to authenticate with the server credentials")
-            self.login_window.show_authentication_failed()
+            self.window.show_authentication_failed()
            
             # Add a print statement to show the error message in the console
             print("ERROR: Authentication Failed")
@@ -75,7 +82,38 @@ class EchoBot(ClientXMPP):
             self.disconnect()
 
         # Use after to schedule the error message and disconnection
-        self.login_window.root.after(0, handle_failed_auth)
+        self.window.root.after(0, handle_failed_auth)
+
+
+    async def register(self, iq):
+        """
+        Fill out and submit a registration form.
+        Will be called if the registration flag is set to True. 
+        This method will create a new account for the user.
+        """
+        # Create a new Iq object and set the type to 'set'
+        resp = self.Iq()
+        resp['type'] = 'set'
+        resp['register']['username'] = self.boundjid.user
+        resp['register']['password'] = self.password
+
+        # Send the Iq object to the server and handle the response
+        try:
+            await resp.send()
+            messagebox.showinfo("Success", "Account created for %s!" % self.boundjid)
+            print("SUCCESS: Account created for %s!" % self.boundjid)
+        except IqError as e:
+            messagebox.showerror("Error", "Could not register account: %s" % e.iq['error']['text'])
+            print("ERROR: Could not register account: %s" %
+                    e.iq['error']['text'])
+            self.window.show_registration_failed()
+            self.disconnect()
+        except IqTimeout:
+            messagebox.showerror("Error", "No response from server.")
+            print("TIMEOUT: No response from server.")
+            self.window.show_registration_failed()
+            self.disconnect()
+
 
     async def init_home_gui(self):
         """
