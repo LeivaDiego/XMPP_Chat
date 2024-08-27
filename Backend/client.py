@@ -153,7 +153,12 @@ class XMPP_Client(ClientXMPP):
             self.send_presence(pshow=show_value, pstatus=self.presence['status'])
             print(f"SUCCESS: Presence updated to {presence} with status: {self.presence['status']}")
 
-
+    def send_presence_subscription(self, username):
+        """
+        Send a subscription request to add a new contact to the roster.
+        """
+        self.send_presence(pto=username, ptype='subscribe')
+        print(f"SUCCESS: Subscription request sent to {username}")
 
     async def init_home_gui(self):
         """
@@ -200,4 +205,3 @@ class XMPP_Client(ClientXMPP):
             print("ERROR: Timeout while trying to delete account")
             messagebox.showerror("Error", "Timeout while trying to delete account")
             return False
-

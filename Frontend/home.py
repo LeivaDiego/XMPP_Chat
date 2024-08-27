@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
-from turtle import home
 from Frontend.status import UpdatePresenceWindow
+from Frontend.new_contact import AddContactWindow
 
 class HomeWindow:
     """
@@ -32,7 +32,7 @@ class HomeWindow:
 
         # Create buttons for the left-side menu
         tk.Button(menu_frame, text="Show Contacts", command=self.show_contacts).pack(fill=tk.X, pady=5)
-        tk.Button(menu_frame, text="Add New Contact").pack(fill=tk.X, pady=5)
+        tk.Button(menu_frame, text="Add New Contact", command=self.open_add_contact_form).pack(fill=tk.X, pady=5)
         tk.Button(menu_frame, text="Join Group").pack(fill=tk.X, pady=5)
         tk.Button(menu_frame, text="Create New Group").pack(fill=tk.X, pady=5)
         tk.Button(menu_frame, text="Update Presence", command=self.open_update_presence_window).pack(fill=tk.X, pady=5)
@@ -218,7 +218,12 @@ class HomeWindow:
         except Exception as e:
             messagebox.showerror("Error", f"An unexpected error occurred: {e}")
 
-    
+    def open_add_contact_form(self):
+        """
+        Open the AddContactWindow to add a new contact to the roster.
+        """
+        add_contact_window = AddContactWindow(self.client)
+        add_contact_window.root.mainloop()
     
     def logout(self):
         """
