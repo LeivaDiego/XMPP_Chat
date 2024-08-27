@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
+from turtle import home
 from Frontend.status import UpdatePresenceWindow
 
 class HomeWindow:
@@ -36,7 +37,7 @@ class HomeWindow:
         tk.Button(menu_frame, text="Create New Group").pack(fill=tk.X, pady=5)
         tk.Button(menu_frame, text="Update Presence", command=self.open_update_presence_window).pack(fill=tk.X, pady=5)
         tk.Button(menu_frame, text="Logout", command=self.logout).pack(fill=tk.X, pady=5)
-        tk.Button(menu_frame, text="Delete My Account").pack(fill=tk.X, pady=5)
+        tk.Button(menu_frame, text="Delete My Account", command=self.confirm_account_deletion).pack(fill=tk.X, pady=5)
 
         # Create a label or text box for displaying the current user's information at the bottom left
         self.user_info_label = tk.Label(menu_frame, text="User: Not logged in", anchor="w")
@@ -103,8 +104,6 @@ class HomeWindow:
         except Exception as e:
             print(f"ERROR: Failed to update user information: {e}")
 
-
-
     def on_contact_select(self, event):
         """
         Handle the contact selection event.
@@ -113,6 +112,7 @@ class HomeWindow:
         self.update_contacts_list()
         # Then, display the selected contact's information
         self.display_contact_info(event)
+
 
     def update_contacts_list(self):
         """
@@ -185,6 +185,7 @@ class HomeWindow:
         else:
             messagebox.showinfo("Contacts List", "No contacts found")
 
+
     def open_update_presence_window(self):
         """
         Open the UpdatePresenceWindow to update the user's
@@ -193,6 +194,28 @@ class HomeWindow:
         update_presence_window = UpdatePresenceWindow(self.client, self)
         update_presence_window.root.mainloop()
 
+
+    def confirm_account_deletion(self):
+        """
+        Display confirmation dialogs before proceeding with account deletion.
+        """
+        first_confirm = messagebox.askyesno("Confirm Deletion", "Are you sure you want to delete your account?")
+        if first_confirm:
+            second_confirm = messagebox.askyesno("Confirm Deletion", "This action is irreversible. Are you really sure?")
+            if second_confirm:
+                self.delete_account()
+
+    def delete_account(self):
+        """
+        Delete the user's account and log out.
+        """
+        try:
+            self.client.delete_my_account()
+            messagebox.showinfo("Account Deleted", "Your account has been successfully deleted.")
+            self.logout()
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to delete the account: {e}")
+    
     
     def logout(self):
         """

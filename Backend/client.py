@@ -168,3 +168,23 @@ class XMPP_Client(ClientXMPP):
         XMPP_Client._instance = None
         self.initialized = False
         print("INFO: XMPP Client instance cleaned and reset")
+
+
+    def delete_my_account(self):
+        """
+        Delete the user's account from the server.
+        """
+        try:
+            iq = self.Iq()
+            iq['type'] = 'set'
+            iq.enable('register')
+            iq['register']['remove'] = True
+            iq.send(now=True)
+            print("SUCCESS: Account successfully deleted from the server")
+        except IqError as e:
+            print(f"ERROR: Failed to delete account: {e.iq['error']['text']}")
+            raise
+        except IqTimeout:
+            print("ERROR: Timeout while trying to delete account")
+            raise
+
