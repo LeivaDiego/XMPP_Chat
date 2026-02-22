@@ -6,4 +6,4 @@ pycares==4.9.0
 pycparser==2.22
 setuptools==78.1.1
 slixmpp==1.8.5
-wheel==0.43.0
+wheel==0.46.2
